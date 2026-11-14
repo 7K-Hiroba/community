@@ -170,6 +170,17 @@ class RegistryValidationTests(unittest.TestCase):
         new["migratedFrom"] = "argocd"
         self.assert_valid(document([old, new]), base)
 
+    def test_existing_migration_pair_cannot_be_removed(self):
+        old = app(status="deprecated")
+        old["replacedBy"] = "argocd-next"
+        new = app("argocd-next", status="active")
+        new["migratedFrom"] = "argocd"
+        base = document([old, new])
+        changed = copy.deepcopy(base)
+        del changed["apps"][0]["replacedBy"]
+        del changed["apps"][1]["migratedFrom"]
+        self.assert_invalid(changed, base, expected="migration link")
+
     def test_valid_reserved_to_active_transition(self):
         base = document()
         self.assert_valid(document([app(status="active")]), base)

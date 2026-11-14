@@ -10,6 +10,7 @@ from pathlib import Path
 import jsonschema
 
 IMMUTABLE_FIELDS = ["repository", "dashboardUidPrefix", "grafanaFolderSegment"]
+MIGRATION_LINK_FIELDS = ["replacedBy", "migratedFrom"]
 ALLOWED_TRANSITIONS = {
     ("reserved", "reserved"),
     ("reserved", "active"),
@@ -145,6 +146,11 @@ def validate_base(document, base):
         for field in IMMUTABLE_FIELDS:
             if old.get(field) != new.get(field):
                 errors.append(f"apps[{app_id}].{field}: silent identity change is forbidden")
+        for field in MIGRATION_LINK_FIELDS:
+            if field in old and old[field] != new.get(field):
+                errors.append(
+                    f"apps[{app_id}].{field}: established migration link cannot be removed or retargeted"
+                )
     return errors
 
 
