@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "apps": [
+    {
+      "id": "argocd",
+      "repository": "https://github.com/7K-Hiroba/argocd",
+      "maintainers": ["@7K-Hiroba/argocd-maintainers"],
+      "status": "reserved",
+      "dashboardUidPrefix": "argocd-",
+      "grafanaFolderSegment": "argocd"
+    },
+    {
+      "id": "monitoring",
+      "repository": "https://github.com/7K-Hiroba/monitoring",
+      "maintainers": ["@7K-Hiroba/monitoring-maintainers"],
+      "status": "reserved",
+      "dashboardUidPrefix": "monitoring-",
+      "grafanaFolderSegment": "monitoring"
+    },
+    {
+      "id": "aws",
+      "repository": "https://github.com/7K-Hiroba/aws",
+      "maintainers": ["@7K-Hiroba/aws-maintainers"],
+      "status": "reserved",
+      "dashboardUidPrefix": "aws-",
+      "grafanaFolderSegment": "aws"
+    },
+    {
+      "id": "identity",
+      "repository": "https://github.com/7K-Hiroba/identity",
+      "maintainers": ["@7K-Hiroba/identity-maintainers"],
+      "status": "reserved",
+      "dashboardUidPrefix": "identity-",
+      "grafanaFolderSegment": "identity"
+    },
+    {
+      "id": "platform-essentials",
+      "repository": "https://github.com/7K-Hiroba/platform-essentials",
+      "maintainers": ["@7K-Hiroba/platform-essentials-maintainers"],
+      "status": "reserved",
+      "dashboardUidPrefix": "platform-essentials-",
+      "grafanaFolderSegment": "platform-essentials"
+    }
+  ]
+}
