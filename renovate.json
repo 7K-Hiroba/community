@@ -1,0 +1,19 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "automerge": false,
+  "packageRules": [
+    {
+      "matchManagers": ["github-actions", "pip_requirements"],
+      "automerge": false
+    },
+    {
+      "matchPaths": ["registry/**", "docs/legal/**", "**/CLA.md", "**/TRADEMARKS.md", "docs/governance/**"],
+      "automerge": false
+    },
+    {
+      "matchUpdateTypes": ["major"],
+      "automerge": false
+    }
+  ]
+}

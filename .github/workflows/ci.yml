@@ -1,0 +1,63 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    uses: 7K-Group/workflows-library/.github/workflows/ci-docs.yml@6612ebd846a4795d763452be71c8dd9cdb091dab # main 2026-11-14
+    with:
+      path: .
+    permissions:
+      contents: read
+
+  registry:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0
+        with:
+          python-version: "3.11"
+      - name: Install hash-locked dependencies
+        run: python3 -m pip install --require-hashes -r requirements-dev.txt
+      - name: Unit tests
+        run: python3 -m unittest discover -s tests -p 'test_*.py'
+      - name: Validate registry schema and semantics
+        run: python3 scripts/validate_registry.py --registry registry/apps.json --schema registry/apps.schema.json
+      - name: Validate registry migrations against main
+        run: |
+          git fetch origin main
+          python3 scripts/validate_registry.py --registry registry/apps.json --schema registry/apps.schema.json --base-revision origin/main
+      - name: Validate JSON syntax
+        run: |
+          python3 -m json.tool registry/apps.json >/dev/null
+          python3 -m json.tool registry/apps.schema.json >/dev/null
+      - name: Check whitespace
+        run: git diff --check origin/main...HEAD
+
+  links:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0
+        with:
+          python-version: "3.11"
+      - name: Install hash-locked dependencies
+        run: python3 -m pip install --require-hashes -r requirements-dev.txt
+      - name: Validate local Markdown links
+        run: python3 scripts/check_markdown_links.py --root .
+      - name: Validate immutable workflow references
+        run: python3 scripts/validate_workflow_pins.py .github/workflows
