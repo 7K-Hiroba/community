@@ -45,7 +45,7 @@ class RegistryValidationTests(unittest.TestCase):
             if base != "not-json":
                 base_path = Path(directory) / "base.json"
                 base_path.write_text(json.dumps(base), encoding="utf-8")
-                command.extend(["--base-revision", str(base_path)])
+                command.extend(["--base-file", str(base_path)])
             return subprocess.run(command, capture_output=True, text=True, check=False)
 
     def assert_valid(self, current, base="not-json"):
@@ -180,6 +180,59 @@ class RegistryValidationTests(unittest.TestCase):
         del changed["apps"][0]["replacedBy"]
         del changed["apps"][1]["migratedFrom"]
         self.assert_invalid(changed, base, expected="migration link")
+
+    def test_established_valid_migration_remains_valid(self):
+        old = app(status="deprecated")
+        old["replacedBy"] = "argocd-next"
+        new = app("argocd-next", status="active")
+        new["migratedFrom"] = "argocd"
+        established = document([old, new])
+        self.assert_valid(established, established)
+
+    def test_migration_target_must_be_new(self):
+        for status in ["active", "reserved"]:
+            with self.subTest(status=status):
+                base = document([app(status="active"), app("monitoring", status=status)])
+                changed = document(
+                    [
+                        dict(app(status="deprecated"), replacedBy="monitoring"),
+                        dict(app("monitoring", status=status), migratedFrom="argocd"),
+                    ]
+                )
+                self.assert_invalid(changed, base, expected="replacement must be a new entry")
+
+    def test_base_revision_cannot_be_shadowed_by_origin_main_file(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            subprocess.run(["git", "init", "-q"], cwd=root, check=True)
+            subprocess.run(["git", "config", "user.email", "tests@example.invalid"], cwd=root, check=True)
+            subprocess.run(["git", "config", "user.name", "Registry Tests"], cwd=root, check=True)
+            registry = root / "registry" / "apps.json"
+            registry.parent.mkdir()
+            registry.write_text(json.dumps(document([app(status="deprecated")])), encoding="utf-8")
+            subprocess.run(["git", "add", "registry/apps.json"], cwd=root, check=True)
+            subprocess.run(["git", "commit", "-qm", "base"], cwd=root, check=True)
+            subprocess.run(["git", "update-ref", "refs/remotes/origin/main", "HEAD"], cwd=root, check=True)
+            registry.write_text(json.dumps(document([])), encoding="utf-8")
+            command = [
+                sys.executable,
+                str(SCRIPT),
+                "--registry",
+                "registry/apps.json",
+                "--schema",
+                str(SCHEMA),
+                "--base-revision",
+                "origin/main",
+            ]
+            without_shadow = subprocess.run(command, cwd=root, capture_output=True, text=True, check=False)
+            self.assertNotEqual(without_shadow.returncode, 0, without_shadow.stdout + without_shadow.stderr)
+            self.assertIn("deprecated", without_shadow.stdout + without_shadow.stderr)
+            shadow = root / "origin" / "main"
+            shadow.parent.mkdir()
+            shadow.write_text(json.dumps(document([])), encoding="utf-8")
+            with_shadow = subprocess.run(command, cwd=root, capture_output=True, text=True, check=False)
+            self.assertNotEqual(with_shadow.returncode, 0, with_shadow.stdout + with_shadow.stderr)
+            self.assertIn("deprecated", with_shadow.stdout + with_shadow.stderr)
 
     def test_valid_reserved_to_active_transition(self):
         base = document()

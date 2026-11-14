@@ -33,9 +33,6 @@ def load_json_file(path: Path):
 
 
 def load_base_revision(revision: str):
-    candidate = Path(revision)
-    if candidate.is_file():
-        return load_json_file(candidate)
     result = subprocess.run(
         ["git", "show", f"{revision}:registry/apps.json"],
         capture_output=True,
@@ -143,6 +140,8 @@ def validate_base(document, base):
         new_status = new.get("status")
         if (old_status, new_status) not in ALLOWED_TRANSITIONS:
             errors.append(f"apps[{app_id}].status: invalid {old_status} to {new_status} status transition or old-ID reuse")
+        if "migratedFrom" in new and "migratedFrom" not in old:
+            errors.append(f"apps[{app_id}].migratedFrom: migration replacement must be a new entry")
         for field in IMMUTABLE_FIELDS:
             if old.get(field) != new.get(field):
                 errors.append(f"apps[{app_id}].{field}: silent identity change is forbidden")
@@ -171,13 +170,20 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--registry", type=Path, required=True)
     parser.add_argument("--schema", type=Path, required=True)
-    parser.add_argument("--base-revision")
+    base_source = parser.add_mutually_exclusive_group()
+    base_source.add_argument("--base-file", type=Path)
+    base_source.add_argument("--base-revision")
     args = parser.parse_args()
     try:
         document = load_json_file(args.registry)
         schema = load_json_file(args.schema)
         jsonschema.Draft202012Validator.check_schema(schema)
-        base = load_base_revision(args.base_revision) if args.base_revision else None
+        if args.base_file:
+            base = load_json_file(args.base_file)
+        elif args.base_revision:
+            base = load_base_revision(args.base_revision)
+        else:
+            base = None
         errors = validate(document, schema, base)
     except (OSError, ValueError, jsonschema.SchemaError) as error:
         print(str(error))
@@ -186,7 +192,8 @@ def main():
         print(error)
     if errors:
         return 1
-    suffix = f" against {args.base_revision}" if args.base_revision else ""
+    base_input = args.base_revision or args.base_file
+    suffix = f" against {base_input}" if base_input else ""
     print(f"Registry valid{suffix}: {args.registry}")
     return 0
 

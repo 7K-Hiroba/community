@@ -27,6 +27,9 @@ class WorkflowPinTests(unittest.TestCase):
             "  test:\n"
             "    steps:\n"
             f"      - uses: actions/checkout@{FULL_SHA} # v4.2.2\n"
+            f'      - "uses": actions/checkout@{FULL_SHA} # v4.2.2\n'
+            f"      - uses : actions/checkout@{FULL_SHA} # v4.2.2\n"
+            f"      - {{uses: actions/checkout@{FULL_SHA}}} # v4.2.2\n"
             "      - uses: ./.github/workflows/local.yml\n"
         )
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
@@ -42,6 +45,18 @@ class WorkflowPinTests(unittest.TestCase):
             with self.subTest(name=name):
                 result = self.run_validator(f"steps:\n  - uses: {reference}\n")
                 self.assertNotEqual(result.returncode, 0)
+                self.assertIn("uses:", result.stdout + result.stderr)
+
+    def test_rejects_unpinned_alternate_yaml_key_styles(self):
+        cases = {
+            "flow mapping": "steps:\n  - {uses: actions/checkout@v4}\n",
+            "quoted key": 'steps:\n  - "uses": actions/checkout@v4\n',
+            "spaced key": "steps:\n  - uses : actions/checkout@v4\n",
+        }
+        for name, content in cases.items():
+            with self.subTest(name=name):
+                result = self.run_validator(content)
+                self.assertNotEqual(result.returncode, 0, result.stdout + result.stderr)
                 self.assertIn("uses:", result.stdout + result.stderr)
 
 
