@@ -1,0 +1,17 @@
+* @7K-Hiroba/community-maintainers
+
+/GOVERNANCE.md @7K-Hiroba/community-maintainers @7K-Hiroba/hiroba-maintainers
+/MAINTAINERS.md @7K-Hiroba/community-maintainers @7K-Hiroba/hiroba-maintainers
+/docs/governance/github-organization.md @7K-Hiroba/community-maintainers @7K-Hiroba/hiroba-maintainers @7K-Hiroba/platform-security
+/docs/governance/onboarding.md @7K-Hiroba/community-maintainers @7K-Hiroba/platform-security
+/docs/governance/trust-tiers.md @7K-Hiroba/community-maintainers @7K-Hiroba/platform-security
+/docs/governance/org-resource-access.md @7K-Hiroba/community-maintainers @7K-Hiroba/platform-security
+/docs/governance/app-id-migrations.md @7K-Hiroba/community-maintainers @7K-Hiroba/platform-security
+/registry/ @7K-Hiroba/community-maintainers @7K-Hiroba/platform-security
+/scripts/ @7K-Hiroba/community-maintainers @7K-Hiroba/platform-security
+/.github/workflows/ @7K-Hiroba/community-maintainers @7K-Hiroba/platform-security
+/CLA.md @7K-Hiroba/community-maintainers @7K-Hiroba/legal-reviewers
+/TRADEMARKS.md @7K-Hiroba/community-maintainers @7K-Hiroba/legal-reviewers
+/CONTRIBUTING.md @7K-Hiroba/community-maintainers @7K-Hiroba/legal-reviewers
+/docs/legal/ @7K-Hiroba/community-maintainers @7K-Hiroba/legal-reviewers
+/PULL_REQUEST_TEMPLATE.md @7K-Hiroba/community-maintainers @7K-Hiroba/legal-reviewers
