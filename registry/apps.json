@@ -12,7 +12,7 @@
     {
       "id": "monitoring",
       "repository": "https://github.com/7K-Hiroba/monitoring",
-      "maintainers": ["@7K-Hiroba/monitoring-maintainers"],
+      "maintainers": ["@7K-Hiroba/hiroba-maintainers"],
       "status": "reserved",
       "dashboardUidPrefix": "monitoring-",
       "grafanaFolderSegment": "monitoring"
